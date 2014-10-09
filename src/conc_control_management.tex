@@ -1,0 +1,83 @@
+The elementary operations are:
+\begin{itemize}
+	\item read of a single object $x$ ($r(x)$);
+	\item write of a single data object $x$ ($w(x)$).
+\end{itemize}
+They may require reading from disk or writing to disk an entire page.
+
+The \emph{scheduler} is a block of the concurrency control manager and it's in charge of deciding if and when read/write requests can be satisfied.
+The \emph{transaction} is a sequence of read and write operations characterized by the same transaction id (\emph{TID}).
+The \emph{schedule} is a sequence of read/write operations presented by concurrent transactions; operations in
+the schedule appear in the arrival order of requests.
+The concurrency control accepts or rejects schedules to avoid anomalies (lost update, dirty read, inconsistent read, ghost update).
+The scheduler has to accept or reject operation execution withoutknowing the outcome of the transactions (abort or commit).
+The \emph{serial schedule} is a schedule in which the actions of each transaction appear in sequence, without interleaved actions belonging to different transactions.
+An arbitrary schedule $S_i$ is correct when it yields the same result as an arbitrary serial schedule $S_j$ of the same transaction and in this case it's possible to say that $S_i$ is \emph{serializable} (it's equivalent to an arbitrary serial schedule of the same transactions).
+It's possible to define different equivalence classes between two schedules and they are:
+\begin{itemize}
+	\item view equivalence (VSR);
+	\item conflict equivalence (CSR);
+	\item 2-phase locking (2PL);
+	\item timestamp equivalence.
+\end{itemize}
+Each equivalence class detects a set of acceptable schedules and they are characterized by a different complecity in detecting equivalence.
+
+\subsubsection{View Equivalence (VSR)}
+Definitions:
+\begin{description}
+	\item[read-from] $r_i(x)$ reads-from $w_j(x)$ when $w_j$ precedes $r_i$ and $i \neq j$ and when there's no other $w_k$ between them;
+	\item[final write] $w_i(x)$ is a final write if it's the last write of $x$ appearing in the schedule.
+\end{description}
+Two schedules are \emph{view equivalent} if they have the same read-from set and the same final write set.
+A schedule is \emph{view serializable} if it's view equivalent to an arbitrary serial schedule of the same transactions.
+Detecting view equivalence to a given schedule has linear complexity.
+Detecting view equivalence to an arbitrary serial schedule is \emph{NP-complete} problem (checking for \underline{all} possible permutations of an arbitrary schedule).
+
+\subsubsection{Conflict Equivalence (CSR)}
+Action $A_i$ is in conflict with action $A_j$ ($i \neq j$) if both actions operate on the same object and at least one of them is a write (\emph{read-write} conflict (RW) or \emph{write-read} conflict (WR), \emph{write-write} conflict
+(WW)).
+Two schedules are \emph{conflict equivalent} if they have the same conflict set and each conflict pair is in the same order in both schedules.
+A schedule is \emph{conflict serializable} if it's equivalent to an arbitrary serial schedule of the same transactions.
+Conflict graph: it's used to detect conflict serializability.
+It's represented in this way: a node for each transaction, an edge $T_i \to T_j$ if there exists at least a conflict between an action $A_i$ in $T_i$ and $A_j$ in $T_j$ and $A_i$ precedes $A_j$.
+If this conflict graph is acyclic then the schedule is \emph{conflict serializable} (CSR).
+Checking Conflict Graph is a linear operation.
+
+\subsubsection{2-Phase locking (2PL)}
+A \emph{lock} is a block on a resource which may prevent access to others.
+Lock operations can be: \emph{lock} (read lock or write lock) or \emph{unlock}.
+Each read (write) operation is preceded by a request of read (write) lock and it's followed by a request of unlock.
+The difference between \emph{R-Lock} and \emph{W-Lock} is that in the first case the lock is shared among different transactions, while the \emph{W-Lock} is exclusive and only one transaction per time can obtain the \emph{W-Lock} on a specific resource.
+There's another situation that is the \emph{lock escalation}: it's a particular situation in which a transaction requests an \emph{R-Lock} followed by \emph{W-Lock} on the same specific resource.
+With this method, the scheduler becomes a \emph{lock manager}.
+It receives transaction requests and grants locks based on locks already granted to other transactions:
+\begin{itemize}
+	\item when the lock request is granted then the corresponding resource is acquired by the requesting transaction and when the transaction performs the unlock, the resource becomes again available;
+	\item when the lock is not granted the requesting transaction is put in a waiting state and this state terminates when the resource is unlocked and become available.
+\end{itemize}
+The lock manager exploits the information in the lock table to decide if a given lock can be granted to a transaction and the conflict table to manage lock conflicts (conflict table summarizes the rules to grant a lock).
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{c|l|l|l}
+		\multicolumn{1}{c|}{\multirow{2}{*}{Request}} & \multicolumn{3}{c}{Resource State} \\ \cline{2-4}
+		& Free & R-Locked & W-Locked \\ \hline
+		R-Lock & OK/R-Locked & OK/R-Locked & Nope/W-Locked \\ \hline
+		W-Lock & OK/W-Locked & \parbox[l]{3cm}{Nope/R-Locked\\or OK/W-Locked\\(for lock escalation)} & Nope/W-Locked \\ \hline
+		Unlock & ERROR & OK/R-Locked of Free & OK/Free \\
+	\end{tabular}
+	\caption{Conflict Table}
+\end{table}
+Read locks are shared and other transactions may lock the same resource; for this reason a counter is used to count the number of transactions currently holding the R-Lock (the resource is free when the counter is zero).
+
+The two phases are:
+\begin{description}
+	\item[growing phase] this is the initial phase of each transaction, in which all needed locks are acquired;
+	\item[shrinking phase] this is the last phase of each transaction, in which all locks are released.
+\end{description}
+It's important to notice that if a transactions starts with the shrinking phase, it cannot acquire other resources; in other words: a transaction cannot acquire a now lock after having released any lock.
+
+A variant of 2-Phase Locking is the \emph{Strict 2-Phase Locking} in which a transaction locks may be released only at the end of the transaction (after commit/rollback).
+The process is articulated in this way: a transaction requests a resource $x$, if the request can be satisfied, the lock manager modify the state of resource $x$ in its internal tables and it returns control to the requesting transaction; if the request cannot be satisfied immediately, the requesting transaction in inserted in a waiting queue and suspended (wait) and only when the resource become available, the first transaction in the waiting queue is resumed and is granted the lock on the resource.
+When a timeout of a generic transaction in the waiting queue expires, the lock manager extracts the waiting transaction from the queue, resumes it and returns a not ok error code, the requesting transaction can perform a rollback and request again the same lock after some time.
+The timeout for each transaction is useful also to avoid deadlocks.

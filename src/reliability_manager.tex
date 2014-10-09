@@ -1,0 +1,98 @@
+It's responsible of the atomicity and durability ACID properties.
+It implements the following transactional commands:
+\begin{itemize}
+	\item begin transaction;
+	\item commit work;
+	\item abort/rollback work.
+\end{itemize}
+It provides the following recovery primitives:
+\begin{itemize}
+	\item warm restart (main memory failures);
+	\item cold restart.
+\end{itemize}
+It exploits the Log file, that is a persistent archive file recording DBMS activities; it's stored on ``stable memory'' (idealization of ``perfect'' memory, with no errors, it's approximated by means of redundancy).
+Log file is written in a chronological order and log records can be transaction records or system records.
+Transaction records are:
+\begin{description}
+	\item[Begin] $B(T)$;\footnote{``T'' is the transaction ID.}
+	\item[Commit] $C(T)$;
+	\item[Abort/Rollback] $A(T)$;
+	\item[Insert] $I(T, O, AS)$;\footnote{``O'' is the involved object; ``AS'' is the \emph{after-state} of the involved object.}
+	\item[Update] $U(T, O, BS, AS)$;\footnote{``BS'' is the \emph{before-state} of the involved object.}
+	\item[Delete] $D(T, O, BS)$.
+\end{description}
+System records are:
+\begin{description}
+	\item[dump] backup copy of the database;
+	\item[checkpoint] $CK(L)$.\footnote{``L'' is the list of transactions that are active during the checkpoint time.}
+\end{description}
+\emph{Undoing} action: undo a list of transactions; \emph{redoing} action: redo a list of transactions.
+Idempotency property says that ``Undo and Redo can be repeated an arbitrary number of times without changing the final outcome: \code{UNDO(UNDO(Action) = UNDO(Action)}''.
+The Checkpoint is an operation periodically requested by the Reliability Manager to the Buffer Manager.
+It's not strictly necessary, but it allows a faster recovery process.
+During the checkpoint the DBMS writes data on disk for all completed transactions in a synchronous way (with FORCE primitive) and it records all the active transactions.
+At the end the checkpoint is saved into the log file and the effect of all committed transactions are permanently.
+The Dump creates a complete copy of the database and stores it into an external stable memory (if possible, different from the log memory).
+At the end the Dump is recorded into the log file with a timestamp and the location of the backup.
+Rules for writing the log:
+\begin{description}
+	\item[Write Ahead Log (WAL)] the \emph{before-state} of data in a log record is written in stable memory before database data is written on disk; during recovery, it allows the execution of undo operations on data already written on disk;
+	\item[commit procedure] the \emph{after-state} of data in a log record is written in stable memory before commit.
+	During recovery, it allows the execution of redo operations for transactions that already committed, but where not written on disk;
+	\item[standard situation] is that the \emph{before-states} and the \emph{after-states} are written together: the log is written synchronously (\emph{FORCE}) for data modification written on disk and on commit; the log is written asynchronously (\emph{No FORCE}) for Abort/Rollback.
+\end{description}
+The commit record on the log is a border line:
+\begin{itemize}
+	\item if it's not written in the logs, the transaction should be undone upon failures;
+	\item if it's written in the log, the transaction should be redone upon failure.
+\end{itemize}
+Writing the log is a very important operation and the usage of robust protocols to guarantee reliability is costly, for this reason log writing is optimized by using compact format, parallelism and commiting of groups of transactions (during the same time period).
+
+Recovery Management: when a failure occurs in a DBMS, the system is stopped and the recovery method depends on the failure type:
+\begin{description}
+	\item[system failure] it's caused by software problems or power supply interruptions, it causes only loosing of the main memory content; system failure needs the warm restart method;
+	\item[media failure] it's caused by a failure of devices managing secondary memory, it causes loosing of the database content on disk (or just a portion of that);
+	\item[both cases] the loose of the log file is not contemplated because we suppose that it's located into a stable memory; errors in log file (failures in stable memory) are considered as catastrophic.
+\end{description}
+Warm restart method:
+\begin{enumerate}
+	\item read backward the log until the last checkpoint record;
+	\item detect transactions which should undone/redone:
+	\begin{enumerate}
+		\item at the last checkpoint:
+		\begin{enumerate}
+			\item \code{UNDO = \{active transactions at checkpoint\}},
+			\item \code{REDO = \{empty\}};
+		\end{enumerate}
+		\item read forward the log:
+		\begin{enumerate}
+			\item \code{UNDO = } add all transactions for which the begin record is found,
+			\item \code{REDO = } move transactions from undo list to redo list when the commit record is found,
+			\item transactions ending with Abort/Rollback remain into undo list;
+		\end{enumerate}
+		\item at the end of this step:
+		\begin{enumerate}
+			\item \code{UNDO = \{list of transactions to be undone\}},
+			\item \code{REDO = \{list of transactions to be redone\}};
+		\end{enumerate}
+	\end{enumerate}
+	\item data recovery:
+	\begin{enumerate}
+		\item the log is read backward from the time of failure until the beginning of the oldest transaction in the undo list:
+		\begin{enumerate}
+			\item actions performed by all transactions in the undo list are undone,
+			\item for each transaction the begin record should be reached (even if it's earlier than the checkpoint);
+		\end{enumerate}
+		\item the log is read forward from the beginning of the oldest transaction in the redo list:
+		\begin{enumerate}
+			\item actions of transactions in the redo list are applied to the database,
+			\item for each transaction, the starting point is the begin record for that transaction; 
+		\end{enumerate}
+	\end{enumerate}
+\end{enumerate}
+Cold restart method manages failures damaging the database disk (or a portion of that) and acts as follow:
+\begin{enumerate}
+	\item access the last dump to restore the damaged portion of the damage on disk;
+	\item starting from the last dump record, read the log forward and redo all actions on the database and transaction commit/rollback;
+	\item perform a warm restart.
+\end{enumerate}

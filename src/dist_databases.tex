@@ -1,0 +1,168 @@
+In a distributed database architecture, data and computation are distributed over different machines.
+The typical advantages on this are an improvement of performance, increasing of availability and a stronger reliability.
+There are two major different distributed architectures:
+\begin{description}
+	\item[client/server architecture] it's the simplest and more widespread in which the client manages the user interface and it sends all the requests to the server and the server manages this requests and the database;
+	\item[distributed database system architecture] different DBMS servers are placed on different network nodes, each of them is autonomous and it must be able to cooperate with other servers. In this type of architecture, guaranteeing the ACID properties requires more complex techniques.
+\end{description}
+Distributed Architectures exploits data replications: a replica is a copy of the data stored on a different network node (DBMS server).
+
+The most important properties of distributed databases are: portability (capability of moving a program from a system to a different system) and interoperability (capability of different DBMS servers to cooperate on a given task).
+
+The SLQ execution can be done in two ways:
+\begin{description}
+	\item[compile \& go] the query is sent to the server and then it's prepared (generation of the execution plan), executed and shipped;
+	\item[compile \& store] the query is still sent to the server where it's prepared and the execution plan is saved for future usage.
+	This method is particularly efficient for repeated query executions.
+\end{description}
+
+Particularity of distributed database systems are:
+\begin{itemize}
+	\item local autonomy: each DBMS manages its local data in an autonomous way;
+	\item functional advantages such as appropriate localization of data and applications;
+	\item technological advantages such as increasing of data availability (total block probability is reduced but local blocks may be more frequent) and enhancing of scalability (providing by the modularity and flexibility of the architecture).
+\end{itemize}
+
+Data fragmentation: given a relation $R$, a data fragment is a subset of $R$ in terms of tuples, or schema, or both.
+There are different criteria to perform fragmentation:
+\begin{itemize}
+	\item the horizontal fragmentation of a relation $R$ selects a subset of tuples in $R$ with the same initial schema of $R$, this tuples are obtained by means a selection using a partitioning predicate; fragments are not overlapped and there are no intersections between different fragments;
+	\item the vertical fragmentation of a relation $R$ selects a subset of schema of $R$, obtained by means of projection of a subset of the initial schema of $R$; the primary key should be included in the projection to allow rebuilding the initial relation $R$; with this fragmentation method, all fragments contain the whole tuples; fragments are overlapping on the primary key;
+	\item it's possible to use both previous solutions.
+\end{itemize}
+The fragmentation must have this properties:
+\begin{description}
+	\item[completeness] each information in relation $R$ is contained in at least one fragment of $R$;
+	\item[correctness] the information in $R$ can be rebuilt from all its fragments.
+\end{description}
+
+Distributed databases are based on fragmentation and data is distributed over different servers: each fragment of a starting relation is usually stored in a different files and, possibly, on different locations.
+Actually the initial relation doesn't exist, but we can recreate it rebuilding fragments.
+The allocation schema of a distributed database describes how fragments are stored on different server nodes and we can find several situations:
+\begin{itemize}
+	\item non redundant mapping if each fragment is stored on one single node;
+	\item redundant mapping if some fragments are replicated on different servers, this increases data availability but also complex maintenance (because copy synchronization is needed).
+\end{itemize}
+
+Transparency levels describe the knowledge of how data is distributed among different servers.
+Transparency levels are:
+\begin{description}
+	\item[Fragmentation transparency] applications know the existence of tables but not of their fragments because data distribution is not visible.
+	This is the major level in which the programmer only accesses tables of interest, without looking for specific fragments of it.
+	\item[Allocation transparency] applications know the existence of fragments, but not their allocation; for this reason the programmer must select in what fragment he want to make a query, but in the case that the fragment is 
+	stored in different allocations, the programmer doesn't care about it.This is the medium level.
+	\item[Language transparency] the programmer should select both the fragment and its allocation; this is the format in which higher level queries are transformed by a distributed DBMS because no SQL dialects are used.
+	This is the lowest level and the complexity of queries increase sensibly (programmer must specify all location details in FROM clause).
+\end{description}
+
+In a distributed DBMS, all nodes participating to a distributed transaction must implement the same decision (commit or rollback); for doing this we need the coordination of some specific protocol, called \emph{2-phase commit}.
+The objective of the \emph{2-phase commit protocol} is a coordination of the conclusion of a distributed transaction (only the conclusion).
+To do this we need two specific roles: the first is a coordinator, called \emph{Transaction Manager} (TM), the second is represented by all other DBMS servers which take part to the transaction and they are called \emph{Resource Managers} (RM).
+It's important to say that any participant may take the role of the transaction manager and also the client requesting the transaction execution can do it.
+\emph{2-Phase commit protocol} introduces new rules for the Log files.
+First of all it's important to say that both TM and RM have separate and private logs.
+For TM 2PC introduces new type of log records:
+\begin{description}
+	\item[prepare] contains the identity of all RMs participating to the transaction;
+	\item[global commit/rollback] final decision on the transaction outcome, all sub-transactions executed in different nodes are committed or aborted;
+	\item[complete] written at the end of the protocol.
+\end{description}
+New kind of record, which is \emph{Ready}, is introduced also for RMs: the RM is willing to perform a commit on the transaction (``Ok, I can commit\ldots'') and the decision (commit/rollback) cannot be changed afterwards.
+It's important to say that after this point the RM loses its autonomy for the current transaction.
+Steps for the 2-phase commit protocol:
+\begin{enumerate}
+	\item phase I:
+	\begin{enumerate}
+		\item TM:
+		\begin{enumerate}
+			\item writes the prepare record in the log;
+			\item sends the prepare message to all RMs;
+			\item sets a timeout, defining maximum waiting time for RM answer (this is absolutely useful for avoiding useless waste of time waiting some broken RM that will never answer).
+		\end{enumerate}
+		\item RMs:
+		\begin{enumerate}
+			\item wait for the prepare message;
+			\item when they receive it:
+			\begin{enumerate}
+				\item if they are in a reliable state:
+				\begin{itemize}
+					\item write the ready record in the log,
+					\item send the ready message to the TM;
+				\end{itemize}
+				\item if they are not in a reliable state:
+				\begin{itemize}
+					\item send a not ready message to the TM,
+					\item terminate the protocol,
+					\item perform local rollback;
+				\end{itemize}
+				\item if the RM crashed then no answer is sent.
+			\end{enumerate}
+		\end{enumerate}
+		\item TM:
+		\begin{enumerate}
+			\item collects all incoming messages from the RMs;
+			\item if it receives ready from ALL RMs then the log commit global decision record is written in the log;
+			\item if it receives at least one not ready or the timeout expires then the abort global decision record is written in the log.
+		\end{enumerate}
+	\end{enumerate}
+	\item phase II:
+	\begin{enumerate}
+		\item TM:
+		\begin{enumerate}
+			\item sends the global decision to the RMs;
+			\item sets a timeout for the RM answers.
+		\end{enumerate}
+		\item RMs:
+		\begin{enumerate}
+			\item wait for the global decision;
+			\item when they receive it:
+			\begin{enumerate}
+				\item the commit/abort record is written in the log,
+				\item the database is updated,
+				\item an ACK message is sent to the TM.
+			\end{enumerate}
+		\end{enumerate}
+		\item TM:
+		\begin{enumerate}
+			\item collects the ACK messages from the RMs;
+			\item if ALL ACK messages are received then the complete record is written in the log;
+			\item if the timeout expires and some ACK messages are missing then a new timeout is set and the global decision is resent to the RMs which did not answer, until all answers are received.
+		\end{enumerate}
+	\end{enumerate}
+\end{enumerate}
+Each RM is affected by an uncertainty window that starts after ready message is sent and ends upon receipt of global decision.
+During this period, that it should be very small, local resources in the RM are locked and RM can do nothing.
+With this protocol it is possible that some failures occurs:
+\begin{itemize}
+	\item Failure of a participant (RM): the warm restart procedure is modified with a new case: if the last record in the log for transaction $T$ is ``ready'', then $T$ does not know the global decision of its TM.
+	Recovery:
+	\begin{enumerate}
+		\item READY list: it's a new lest collecting the IDs of all transactions in ready state;
+		\item for all transactions in the ready list, the global decision is asked to the TM at the restart (remote recovery request).
+	\end{enumerate}
+	\item Failure of the coordinator (TM): messages that can be lost:
+	\begin{itemize}
+		\item Prepare (outgoing),
+		\item Ready (incoming),
+		\item Global decision (outgoing).
+	\end{itemize}
+	Recovery:
+	\begin{itemize}
+		\item if the last record in the TM log is prepare then the global abort decision is written in the log and sent to all participants,
+		\item if the last record in the TM log is the global decision than there's the repetition of phase II.
+	\end{itemize}
+	\item It's important to say that any kind of network problem in Phase I causes global abort (the prepare or the ready message are not received). Any network problem in Phase II causes the repetition of Phase II.
+\end{itemize}
+
+Parallel DBMS: in this DBMS it's used parallelism for computation for increasing efficiency, in fact queries can be effectively ``parallelized''.
+To do that, different technological solutions are available, such as multiprocessor systems or computer clusters.
+Inter-query parallelism it's used to schedule and execute different queries (or just sub-parts of one single query) on different processors, of course queries must be non-conflicting requests, in terms of memory locations.
+Inter-query parallelism is used mostly in OLTP systems.
+Benchmarks describe the conditions in which performance is measured for a system and in the case of DBMS, they are standardized by the Transaction Processing Council (TPC).
+Each benchmark is characterized by:
+\begin{description}
+	\item[transaction load] distribution of arrival time of transactions;
+	\item[database size and content] randomize data generation;
+	\item[transaction code];
+	\item[techniques to measure and certify performance].
+\end{description}

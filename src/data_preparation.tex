@@ -1,0 +1,134 @@
+Before starting with data mining activities we need to make some kind of data preprocessing to objects that we are going to analyse for having good results without noises or bad attributes.
+The most important techniques for data preparation are:
+\begin{description}
+	\item[Aggregation] means combining two or more attributes (or objects) into a single attribute (or object).
+	The main purposes are: data reduction (reducing number of attributes or objects), change of scale and more ``stable'' data (aggregated data tends to have less variability).
+	\item[Data reduction] is a generalization of aggregation, it generates a reduced representation of the dataset.
+	This representation is smaller in volume, but it can provide similar analytical results.
+	The methods for doing data reduction are the following:
+	\begin{itemize}
+		\item Sampling is the main technique employed for data selection and it's often used for both the preliminary investigation of the data and the final data analysis.
+		Sampling is used in data mining because processing the entire set of data of interest is too expensive or time consuming, especially in case of very big data sets.
+		The key principle for effective sampling is the following:
+		\begin{itemize}
+			\item using a sample will work almost as well as using the entire data sets, if the sample is representative;
+			\item a sample is representative if it has approximately the same property (of interest) as the original set of data.
+		\end{itemize}
+		There are different types of sampling:
+		\begin{itemize}
+			\item simple random sampling, in which there's an equal probability of selecting any particular item from the dataset;
+			\item sampling without replacement, where as each item is selected, it's removed from the population of the data set;
+			\item sampling with replacement, objects are not removed from the population as they are selected for the sample and in this way it's possible that the same object can be selected more than once;
+			\item stratified sampling, where data is split into several partitions (similar with clustering); then draw random samples from each partition.
+		\end{itemize}
+		\item Dimensionality Reduction: when the dimensionality of a data set increases, data becomes increasingly sparse in the space that it occupies; for this reason different techniques are used for: avoiding curse of dimensionality, reducing amount of time and memory required by data mining algorithms, allowing data to be more easily visualized and helping to eliminate irrelevant features or reducing noises.
+		One of this technique is the Principle Component Analysis that is used to find a projection that captures the largest amount of variation in data, this projection replaces some specific attributes in data set, reducing the dimensionality.
+		\item Feature subset selection: another way to reduce dimensionality of data is to eliminate some attributes or features that are not useful to the analysis, such as eliminating of:
+		\begin{itemize}
+			\item redundant features: duplicate much or all of the information contained in one or more other;
+			\item irrelevant features: contain no information that is useful for the data mining task at hand.
+		\end{itemize}
+		There are different techniques for applying the feature subset selection and they are:
+		\begin{description}
+			\item[brute-force approach] try all possible feature subsets as input to data mining algorithm and select the subset which gives better results (actually this method is never used because of its higher computational cost);
+			\item[embedded approaches] feature selection occurs naturally as part of the data mining algorithm;
+			\item[filter approaches] features are selected before data mining algorithm is run (filtering first);
+			\item[wrapper approaches] use the data mining algorithm as a black box to find the best subset of attributes, by using some heuristic filtering and exploring just a subset of attributes.
+		\end{description}
+		Feature creation consists in creating new attributes that can capture the important information in a data set much more efficiently than the original attributes.
+		Mapping data to a new space (e.g., Fourier transform or Wavelet transform).
+		Discretization splits the domain of a continuous attribute in a set of intervals, reducing in this way the cardinality of the attribute domain.
+		There are several techniques for making Discretization and they are:
+		\begin{itemize}
+			\item $N$ intervals with the same width ($W = (V_{max} - V_{min})/N$), it is easy to implement but it can be badly affected by outliers and sparse data, it has an incremental approach;
+			\item $N$ intervals with (approximately) the same cardinality, it's better than the previous one because it better fits sparse data and outliers, but it hasn't incremental approach;
+			\item clustering, it's the best technique and it well fits sparse data and outliers.
+		\end{itemize}
+	\end{itemize}
+	\item[Attribute transformation] consists in the usage of a function that maps the entire set of values of a given attribute to a new set of replacement values such that each old value can be identified with one of the new values.
+	This method can be performed by using simple functions such as exponentials, logarithms, modulo, or by using standardization and normalization.
+	Normalization is a type of data transformation and it's used when working with different ranges values; the values of an attribute are scaled so as to fall within a small specified range, typically $(-1,+1)$ or $(0,+1)$.
+	There are three techniques:
+	\begin{description}
+		\item[Min-max normalization] it's a sort of proportion of values and typically it's the most used; it follows this formula:
+		$$
+			v' = \frac{v - min_A}{max_A - min_A}\left(new\_max_A - new\_min_A\right) + new\_min_A
+		$$
+		\item[Z-score normalization] it's used with no uniform distribution of values and in presence of noises; it follows this formula:
+		$$
+			v' = \frac{v - mean_A}{stand\_dev_A}
+		$$
+		\item[Decimal scaling] it makes just some scaling by ten of a value $v' = \frac{v}{10^j}$ where $j$ is is the smallest integer such that $max\left(|v'|\right) < 1$.
+	\end{description}
+\end{description}
+
+In some cases is very useful making some comparison between two (or more) different objects, this can be done by exploiting some comparing parameters of calculating the ``distance'' between objects.
+This techniques are similarity, dissimilarity and distance.
+\begin{itemize}
+	\item Similarity is a numerical measure of how alike two data objects are.
+	If often falls in the range $[0,1]$ and is higher when objects are more alike (similar or equal).
+	\item Dissimilarity is a numerical measure of how different are two data; it's lower when object are more alike (similar or equal) and the minimum dissimilarity is often 0.
+	Upper limit varies and can be an high value.
+	\item There are several formulas for making this numerical measures based on what type of attribute we're analysing for: $p$ and $q$ are the attribute values for two data objects
+	\begin{table}[h]
+		\centering
+		\begin{tabular}{l|l|l}
+			Attribute Type & Dissimilarity & Similarity \\ \hline
+			Nominal & $d = \left\{ \begin{array}{l l} 0 \quad \text{if} p = q \\ 1 \quad \text{if} p \neq q \end{array} \right.$ & $s = \left\{ \begin{array}{l l} 1 \quad \text{if} p = q \\ 0 \quad \text{if} p \neq q \end{array} \right.$ \\ \hline
+			Ordinal & \parbox[l]{5cm}{$d = \frac{|p - q|}{n - 1}$\\(values mapped to integers\\from $0$ to $n-1$,\\where $n$ is the\\number of values)} & $s = 1 - \frac{|p - q|}{n - 1}$ \\ \hline
+			Interval or ration & $d = |p - q|$ & \parbox[lc]{5cm}{$s = -d$, $s = \frac{1}{1 + d}$ or\\$s = 1 - \frac{d - min_d}{max_d - min_d}$}
+		\end{tabular}
+	\end{table}
+\end{itemize}
+
+In some cases it's possible to calculate the distance between two or more object, according to its attributes.
+There are two methods:
+\begin{description}
+	\item[Euclidean Distance] is the standard method for having the distance between objects.
+	It's based on this formula: $dist = \sqrt{\sum_{k = 1}^{n} (p_k - q_k)^2}$ where $n$ is the number of dimensions (attributes) and $p_k$ and $q_k$ are, respectively, the $k^{th}$ attributes (components) or data object $p$ and $q$.
+	Standardization (normalization) is necessary when the objects have different scales of representation.
+	\item[Minkowski Distance] is a generalization of Euclidean Distance and consists in a modification of the radix and exponential values; it's based on this formula: $dist = (\sum_{k = 1}^{n} |p_k - q_k|^r)^{\frac{1}{r}}$ where $r$ is a parameter, $n$ is the number of dimensions (attributes) and $p_k$ and $q_k$ are, respectively, the $k^{th}$ attributes (components) or data object $p$ and $q$.
+	The values of parameter $r$ depends on what kind of analysis we're going to do:
+	\begin{itemize}
+		\item $r = 1 \to $ city block distance (a common example of this is the Hamming distance, which is just the number of bits that are different between two binary vectors);
+		\item $r = 2 \to $ Euclidean distance;
+		\item $r = \infty \to $ ``Supremum'' $(L_{max}norm, L_{\infty}norm)$ distance (this is the maximum difference between any component of the vectors).
+	\end{itemize}
+\end{description}
+
+There are some common properties related to the measurement of distance:
+\begin{description}
+	\item[positive definiteness] $d(p, q) \geq 0$ for all $p$ and $q$ and $d(p, q) = 0$ only if $p = q$;
+	\item[symmetry] $d(p, q) = d(q, p)$ for all $p$ and $q$;
+	\item[triangle inequality] $d(p, r) \leq d(p, q) + d(q, r)$ for all points $p$, $q$ and $r$.
+\end{description}
+A distance that satisfies these properties is a metric.
+
+Similarities also have some well known properties:
+\begin{description}
+	\item[Maximum similarity] $S(p, q) = 1$ only if $p = q$;
+	\item[Symmetry] $S(p, q) = S(q, p)$ for all $p$ and $q$.
+\end{description}
+
+In the case when two objects are composed by binary attributes only, we can exploit two different methods to evaluate the distance between this objects and they are \emph{Simple Matching} and \emph{Jaccard Coefficients}.
+First of all it's important to define some values:
+\begin{itemize}
+	\item $M_{01}$ = the number of attributes where $p$ was $0$ and $q$ was $1$;
+	\item $M_{10}$ = the number of attributes where $p$ was $1$ and $q$ was $0$;
+	\item $M_{00}$ = the number of attributes where $p$ was $0$ and $q$ was $0$;
+	\item $M_{11}$ = the number of attributes where $p$ was $1$ and $q$ was $1$.
+\end{itemize}
+\emph{Simple Matching Coefficient (SMC)} is defined as number of matches / number of attributes and it follows this formula:
+$$
+	SMC = (M_{11} + M_{00})/(M_{01} + M_{10} + M_{11} + M_{00})
+$$
+\emph{Jaccard Coefficients} is defined as the number of 11 matches / number of not-both-zero attributes values; this method is more precise with sparse dataset (e.g., $0010100000$ vs. $010010000$). It follows this formula:
+$$
+	J = (M_{11})/(M_{01} + M_{10} + M_{11})
+$$
+\emph{Cosine Similarity} is another method to compute the distance between objects and it's implemented by this formula:
+$$
+	\cos(d_1, d_2) = (d_1 \cdot d_2) / \|d_1\|\|d_2\|
+$$
+where ``$\cdot$'' indicates vector dot product and $\|d\|$ is the length of the vector $d$.
+Finally, it's possible to do not treat all attributes the same, and it can be done by using some weights which are between $0$ and $1$ and sum to $1$.

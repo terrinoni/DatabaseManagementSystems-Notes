@@ -10,7 +10,7 @@ The \emph{transaction} is a sequence of read and write operations characterized 
 The \emph{schedule} is a sequence of read/write operations presented by concurrent transactions; operations in
 the schedule appear in the arrival order of requests.
 The concurrency control accepts or rejects schedules to avoid anomalies (lost update, dirty read, inconsistent read, ghost update).
-The scheduler has to accept or reject operation execution withoutknowing the outcome of the transactions (abort or commit).
+The scheduler has to accept or reject operation execution without knowing the outcome of the transactions (abort or commit).
 The \emph{serial schedule} is a schedule in which the actions of each transaction appear in sequence, without interleaved actions belonging to different transactions.
 An arbitrary schedule $S_i$ is correct when it yields the same result as an arbitrary serial schedule $S_j$ of the same transaction and in this case it's possible to say that $S_i$ is \emph{serializable} (it's equivalent to an arbitrary serial schedule of the same transactions).
 It's possible to define different equivalence classes between two schedules and they are:
@@ -59,7 +59,7 @@ The lock manager exploits the information in the lock table to decide if a given
 
 \begin{table}[h]
 	\centering
-	\begin{tabular}{c|l|l|l}
+	\begin{tabular}{c|c|c|c}
 		\multicolumn{1}{c|}{\multirow{2}{*}{Request}} & \multicolumn{3}{c}{Resource State} \\ \cline{2-4}
 		& Free & R-Locked & W-Locked \\ \hline
 		R-Lock & OK/R-Locked & OK/R-Locked & Nope/W-Locked \\ \hline

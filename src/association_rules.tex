@@ -1,0 +1,143 @@
+The objective of the association rules is the extraction of frequent correlations or pattern from a \emph{transactional database}.\footnote{A transactional database is a database that contains transactions as records; each transaction is a collection of unsorted items}
+The association rule is defined in this way: $A, B \Rightarrow C$ where $A$ and $B$ are items in the \emph{rule body} and $C$ is the item in the \emph{rule body}, ``$\Rightarrow$'' means \emph{co-occurrence} and identifies the correlation.
+Some definitions:
+\begin{description}
+	\item[Itemset]: a set that includes one or more items;
+	\item[K-Itemset]: an itemset that contains $k$ items;
+	\item[Support count(\#)]: frequency of occurrence of an itemset;
+	\item[Support]: fraction of transactions that contain an itemset;
+	\item[Frequent itemset]: itemset whose support is greater than or equal to a \emph{minsup} treshold.
+\end{description}
+It is possible to define some rule quality metrics; given the association rule $A \Rightarrow C$ we have:
+\begin{description}
+	\item[Support]: fraction of transaction containing both $A$ and $B$: $\frac{\#\left\{A, B\right\}}{|T|}$, where $T$ is the cardinality of the transactional database; \emph{support} defines a priori the probability of itemset $AB$ and rule frequency in the database;
+	\item[Confidence]: frequency of $B$ in transaction containing $A$: $\frac{sup\left(A, B\right)}{sup\left(A\right)}$; \emph{confidence} defines the conditional probability of finding $B$ having found $A$ and the strength of the implication.
+\end{description}
+Given a set of transaction $T$, association rule mining is the extraction of the rules satisfying the constraints:
+\begin{enumerate}
+	\item \emph{support} $\geq$ \emph{minsup treshold};
+	\item \emph{confidence} $\geq$ \emph{minconf treshold}.
+\end{enumerate}
+The result of the extraction can be compared to a normal SQL statement because it is complete (all rules satisfying both constraints) and correct (only the rules satisfying both constraints); it is possible to add other more complex constraints.
+The association rule extraction can be done by using a brute-force approach that consists on enumerate all possible permutations of items (association rule), compute support and confidence for each rule and prune the rules that do not satisfy the \emph{minsup} and \emph{minconf} constraints.
+Actually, the huge amount of possible permutations makes this approach computationally unfeasible; for this reason, given an itemset, the extraction process may be split in this way: the first generates frequent itemsets, next generates rules from each frequent itemset.
+The extraction of frequent itemsets can be done by exploiting different techniques level-wise approaches (e.g., \emph{Apriori}) or approaches without candidate generation (such as \emph{FP-growth}); generally speaking, this is the most computationally expensive step (it is possible to limit the extraction by means of support threshold).
+The extraction of association rules is the generation of all possible binary partitioning of each frequent itemset (possibly enforcing a confidence threshold).
+In the brute-force approach, each itemset in the lattice is a candidate for frequent itemset and for each candidate a scan of the database is performed to count the support.
+The complexity of this algorithm is more or less $\mathcal{O}\left(|T| 2^d w\right)$ where $|T|$ is the number of transactions, $d$ is the number of items, and $w$ is the transaction length.
+It is possible to improve the brute-force approach by making some modifications, improving efficiency.
+The possibilities are:
+\begin{itemize}
+	\item
+	reduce the number of candidates (prune the search space);
+	\item
+	reduce the number of transactions (prune the transactions as the size of itemsets increases);
+	\item
+	reduce the number of comparisons (usage of efficient data structures to store the candidates or transactions).
+\end{itemize}
+
+The \emph{Apriori Principle} is a method to reduce the number of candidates and it is based on the fact that ``if an itemset is frequent, then all of its subsets must also be frequent''; the \emph{support} of an itemset can never exceed the support of any of its subsets.
+It holds due to the antimonotone property of the \emph{support} measure: given two arbitrary itemsets $A$ and $B$, if $A \subseteq B$ then $sup\left(A\right) \geq sup\left(B\right)$.
+The \emph{Apriori Algorithm} (Agr94) is a level-based approach, means that at each iteration, it extracts itemsets of a given length $k$.
+Two main steps are performed for each level:
+\begin{description}
+	\item[Candidate generation]:
+	\begin{enumerate}
+		\item
+		join step: generate candidates of length $k + 1$ by joining frequent itemsets of length $k$;
+		\item
+		prune step by applying \emph{Apriori Principle}: prune length $k + 1$ candidate itemsets that contain at least one \emph{k-itemset} that is not frequent.
+	\end{enumerate}
+	\item[Frequent itemset generation]:
+	\begin{enumerate}
+		\item
+		scan DB to count \emph{support} for $k + 1$ candidates;
+		\item
+		prune candidates below \emph{minsup}.
+	\end{enumerate}
+\end{description}
+The generation of candidates are performed in this way:
+\begin{enumerate}
+	\item
+	sort $L_k$ candidates in lexicographical order;
+	\item
+	for each candidate of length $k$:
+	\begin{enumerate}
+		\item
+		self-join with each candidate sharing among $L_{k - 1}$ prefix;
+		\item
+		prune candidates by applying \emph{Apriori Principle}.
+	\end{enumerate}
+\end{enumerate}
+During the counting of \emph{support} for candidates, scan transaction database is needed to count \emph{support} for each itemset, this can be considered as a sort of bottleneck because total number of candidates may be large and/or one transaction may contain many candidates.
+The approach of \emph{Agr94} is based on using hash-tree structures for storing candidate itemsets (leaf node of hash-tree contains a list of itemsets and count, interior node contains a hash table); a subset function finds all candidates contained in a transaction.
+Another bottleneck is the generation of the candidate: candidate sets may be huge and \emph{2-itemset} candidate generation is the most critical step; additionally $n + 1$ database scans are needed when longest frequent pattern length is $n$.
+Generally the major factors affecting performance of \emph{Arg94} algorithm are:
+\begin{itemize}
+	\item
+	minimum support threshold: lower support threshold increases number of frequent itemsets (large number of candidates, larger length of frequent itemsets);
+	\item dimensionality (number of items) of the dataset: more space is needed to store \emph{support} count of each item and if number of frequent items also increases, both computation and I/O costs may also increases;
+	\item
+	size of database: since \emph{Apriori Principle} makes multiple passes, tun time of algorithm may increase with number of transactions;
+	\item
+	average transaction width: transaction width increases in dense data set and may increase max length of frequent itemsets and traversal of hash tree (numer of subsets in a transaction increases with its width).
+\end{itemize}
+
+There are several methods that are designed to improve \emph{Arg94} and one of this is the \emph{Hash-based itemset counting} (Yu95): a \emph{k-itemset} whose corresponding hashing bucket count is below the threshold cannot be frequent.
+
+\emph{Frequent Pattern - Growth Algorithm} (Han00) is another method that is used to extract rules; it exploits a main memory compressed representation of the database that is the FP-Tree; this high compression if good for dense data distribution, less so for sparse one.
+There is a complete representation for frequent pattern mining, enforces support constraint.
+Frequent pattern mining is make by means of \emph{FP-growth} by using recursive visit of \emph{FP-Tree} (which is located in main memory) and applying \emph{divide-et-conquer} approach.\footnote{Decomposition of mining task into smaller subtasks.}
+Because of main memory exploiting, only two database scans are needed: the first for counting item \emph{supports}, then the second for building \emph{FP-Tree}, after this last operation, all data of the \emph{FP-Tree} is located in main memory and no other database scans are needed.
+\emph{Han00} algorithm follows these steps:
+\begin{enumerate}
+	\item
+	construction of the \emph{FP-Tree}:
+	\begin{enumerate}
+		\item
+		count item \emph{support} and prune items below \emph{minsup} threshold,
+		\item
+		build header table by sorting items in decreasing \emph{support} order,
+		\item
+		create \emph{FP-Tree}, for each transaction $t$ in database:
+		\begin{enumerate}
+			\item
+			order transaction $t$ items in decreasing \emph{support} order,\footnote{Same order as in \emph{Header Table}.}
+			\item
+			insert transaction $t$ in \emph{FP-Tree} by using existing path for common prefix and creating a new branch when path becomes different;
+		\end{enumerate}
+	\end{enumerate}
+	\item
+	scan \emph{Header Table} from lowest \emph{support} item up:
+	\begin{enumerate}
+		\item
+		for each item $i$ in \emph{Header Table} extract frequent itemsets including item $i$ and items preceding it in \emph{Header Table}:
+		\begin{enumerate}
+			\item
+			build conditional pattern base for item $i$ (\emph{i-CPB}),\footnote{Select prefix-paths of item $i$ from \emph{FP-Tree}}
+			\item
+			recursive invocation of \emph{FP-Growth} on \emph{i-CPB};
+		\end{enumerate}
+		\item
+		repeat until all elements in the \emph{Header Table} are computed;
+	\end{enumerate}
+	\item
+	at the end \emph{Han00} returns all possible combinations, each of them with its \emph{support}.
+\end{enumerate}
+
+According to its features, an itemset can be \emph{Maximal Frequent} of \emph{Closed}:
+\begin{itemize}
+	\item
+	an itemset is \emph{Frequent Maximal} if none of its immediate supersets is frequent;
+	\item
+	an itemset is \emph{Closed} if none of its immediate supersets has the same support as the itemset.
+\end{itemize}
+Based on this, we can say that \emph{Maximal Frequent Itemsets} are \emph{Closed Itemsets} by \emph{Closed Itemsets} may be not \emph{Maximal Frequent Itemsets}.
+
+The selection of the appropriate \emph{minsup} threshold is not obvious:
+\begin{itemize}
+	\item
+	if \emph{minsup} is too high, itemsets including rare but interesting items may be lost (e.g., pieces of jewellery);
+	\item
+	if \emph{minsup} is too low, computation may becomes very expensive and the number of frequent itemsets becomes very large.
+\end{itemize}

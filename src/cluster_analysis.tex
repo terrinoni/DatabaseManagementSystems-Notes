@@ -1,0 +1,25 @@
+Cluster analysis are represented by finding groups of objects such that the objects in a group will be similar (or related) to one another and different from (or unrelated to) the objects on other groups.
+A clustering is a set of clusters and each cluster represents a group of objects with similar features.
+There are two main types of clustering:
+\begin{description}
+	\item[Partitional Clustering:] a division data objects into non-overlapping subsets (clusters) such that each data objects is in exactly one subset;
+	\item[Hierarchical Clustering:] a set of nested clusters organized as hierarchical tree (exploiting of dendogram), this type of clustering can be traditional or non-traditional.
+\end{description}
+There are other distinctions between sets of clusters and they are:
+\begin{description}
+	\item[exclusive vs. non-exclusive:] in non-exclusive clustering, points may belong to multiple clusters;
+	\item[fuzzy vs. non-fuzzy:] in fuzzy clustering, a point belongs to every cluster with some weight between $0$ and $1$, weights must sum to $1$ and probabilistic clustering has similar characteristics;
+	\item[partial vs. complete:] in some cases, we only want to cluster some of the data (portion of);
+	\item[heterogeneous vs. homogeneous:] cluster of widely different sizes, shapes, and densities.
+\end{description}
+There are several different types of clusters and they are:
+\begin{description}
+	\item[well-separated clusters:] a cluster is a set of points such that any point in a cluster is closer (or more similar) to every point in the cluster than to any point not in the cluster;
+	\item[centered-based clusters:] a cluster is a set of points such that any point in a cluster is closer (or more similar) to every point in the cluster than to any point not in the cluster; this type is different from the precedent because the center of a cluster is identified by a ``centroid'', which is the average of all the points in the cluster (probably not a physical point), or a ``medoid'', which is the most ``representative'' point of a cluster (represented by a real point in the cluster);
+	\item[contiguous clusters] (Nearest Neighbor or Transitive): a cluster is a set of points such that a point in a cluster is closer (or more similar) to one or more other points in the cluster than to any point not in the cluster;
+	\item[density-based clusters:] a cluster is a dense region of points, which is separated by low-density regions, from other regions of high density; this type of cluster is used when the cluster are irregular or ``interwined'', and when noise and outliers are present;
+	\item[property of conceptual clusters] (Shared Property): finds clusters that share some common property or represent a particular concept;
+	\item[described by an objective function].
+\end{description}
+
+The main clustering algorithms are:

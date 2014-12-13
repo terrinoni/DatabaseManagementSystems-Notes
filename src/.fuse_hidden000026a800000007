@@ -147,13 +147,13 @@ The main clustering algorithms are:
 	\end{itemize}
 	DBSCAN eliminates noise points and perform clustering on the remaining points; the pseudo-code for the algorithm is the following:
 	\begin{algorithmic}
-		\State $current\_sdas\_das \gets 1$
-		\If {$i\geq maxval$}
-		    \State $i\gets 0$
-		\Else
-		    \If {$i+k\leq maxval$}
-		        \State $i\gets i+k$
-		    \EndIf
-		\EndIf
+	\State $current\_cluster\_label \lgets 1$
+	\If {$i\geq maxval$}
+	    \State $i\gets 0$
+	\Else
+	    \If {$i+k\leq maxval$}
+	        \State $i\gets i+k$
+	    \EndIf
+	\EndIf
 	\end{algorithmic}
 \end{description}

@@ -1,5 +1,5 @@
-DatabaseManagementSystems-Note
-==============================
+Notes from the course "Database Management Systems" - Oral exam preparation
+===========================================================================
 
 Personal notes from the course "Database Management Systems", Polytechnic University of Turin 2012.
 

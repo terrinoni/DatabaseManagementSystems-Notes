@@ -146,14 +146,18 @@ The main clustering algorithms are:
 		a \emph{noise point} is any point that is not a core point or a border point.
 	\end{itemize}
 	DBSCAN eliminates noise points and perform clustering on the remaining points; the pseudo-code for the algorithm is the following:
-	\begin{algorithmic}
-		\State $current\_sdas\_das \gets 1$
-		\If {$i\geq maxval$}
-		    \State $i\gets 0$
-		\Else
-		    \If {$i+k\leq maxval$}
-		        \State $i\gets i+k$
-		    \EndIf
-		\EndIf
-	\end{algorithmic}
+%	\begin{algorithmic}
+%		This environment should be used to represent the pseudo-code of DBSCAN...
+%	\end{algorithmic}
+	\code{current_cluster_label = 1}; for each core point \code{cp}, if \code{cp} has no cluster label, then \code{current_cluster_label++} and label the current core point \code{cp} with cluster label \code{current_cluster_label}; for each point \code{p} in the $Eps-neighborhood$ (except $i^{th}$ the point itself), if \code{p} doesn't have a cluster label then label \code{p} with cluster label \code{current_cluster_label}.
+
+	DBSCAN doesn't work well with varying density clusters and high-dimensional data.
 \end{description}
+
+The validation of clustering structures is the most difficult task; to evaluate ``goodness'' of the resulting clusters, some numerical measures can be exploited and they are classified into two main classes:
+\begin{description}
+	\item[External index:] used to measure the extent to which cluster labels match externally supplied class labels (such as entropy, purity, etc.);
+	\item[Internal index:] used to measure the goodness of clustering structure without respect to external information (such as \emph{Sum of Squared Error} (SSE), cluster cohesion\footnote{Cluster cohesion measures how closely related are objects in a cluster.}, cluster separation\footnote{Cluster separation measures how distinct or well-separated a cluster is from other clusters.}, \emph{Rand-Index}, adjusted rand-index, ...)
+\end{description}
+
+The validation of clustering structures is the most difficult and frustrating part of cluster analysis; without a strong effort in this direction, cluster analysis will remain a black art accessible only to those true believers who have experience and great courage.

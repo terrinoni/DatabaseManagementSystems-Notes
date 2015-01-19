@@ -1,72 +1,113 @@
-\documentclass[pdfa,cucitura]{toptesi}
-\hypersetup{%
-	pdfpagemode={UseOutlines},
-	bookmarksopen,
-	pdfstartview={FitH},
-	colorlinks,
-	linkcolor={blue},
-	citecolor={red},
-	urlcolor={blue}
-}
+% \documentclass[pdfa,cucitura]{toptesi}
+% \hypersetup{%
+% 	pdfpagemode={UseOutlines},
+% 	bookmarksopen,
+% 	pdfstartview={FitH},
+% 	colorlinks,
+% 	linkcolor={blue},
+% 	citecolor={red},
+% 	urlcolor={blue}
+% }
 
-\usepackage[latin1]{inputenc}
+% \usepackage[latin1]{inputenc}
 
-% exact placing figures
-\usepackage{float}
+% % exact placing figures
+% \usepackage{float}
 
-% insert eps files
-\usepackage{epstopdf}
+% % insert eps files
+% \usepackage{epstopdf}
 
-% cool tables
-\usepackage{booktabs}
-\usepackage{rotating}
+% % cool tables
+% \usepackage{booktabs}
+% \usepackage{rotating}
 
-\usepackage{mathrsfs}
-\usepackage{amsmath}
+% \usepackage{mathrsfs}
+% \usepackage{amsmath}
 
-\usepackage{caption}
-\usepackage{multirow}
+% \usepackage{caption}
+% \usepackage{multirow}
 
-\usepackage{xfrac}
+% \usepackage{xfrac}
 
-% pseudo-code
-\usepackage{algpseudocode}
+% % pseudo-code
+% \usepackage{algpseudocode}
 
-\selectlanguage{english}
+% \selectlanguage{english}
 
-\ateneo{Politecnico di Torino}
-\titolo{Notes from the course ``Database Management Systems''}
+% \ateneo{Politecnico di Torino}
+% \titolo{Notes from the course ``Database Management Systems''}
 
-\corsodilaurea{Computer Engineering}
+% \corsodilaurea{Computer Engineering}
 
-\candidato{Marco \textsc{Terrinoni}}
+% \candidato{Marco \textsc{Terrinoni}}
 
-\sedutadilaurea{2012}
-\logosede{img/logopolito}
+% \sedutadilaurea{2012}
+% \logosede{img/logopolito}
+
+% \input{utils/commands.tex}
+
+% \begin{document}
+% \english
+
+% \errorcontextlines=9
+
+% \expandafter\ifx\csname StileTrieste\endcsname\relax
+% \frontespizio
+% \else
+% 	\paginavuota
+% 	\begin{dedica}
+% 		To my grandparents
+
+% 		\textdagger\ You will always live in my memories
+% 	\end{dedica}
+% 	\tomo
+% \fi
+
+\documentclass{book}
+
+\newcommand*{\plogo}{\fbox{$\mathcal{PL}$}}
 
 \input{utils/commands.tex}
 
-\begin{document}
-\english
+%\sommario
+%\input{src/summary.tex}
 
-\errorcontextlines=9
+\newcommand*{\titleGP}{\begingroup % Create the command for including the title page in the document
+\centering % Center all text
+\vspace*{\baselineskip} % White space at the top of the page
 
-\expandafter\ifx\csname StileTrieste\endcsname\relax
-\frontespizio
-\else
-	\paginavuota
-	\begin{dedica}
-		To my grandparents
+\rule{\textwidth}{1.6pt}\vspace*{-\baselineskip}\vspace*{2pt} % Thick horizontal line
+\rule{\textwidth}{0.4pt}\\[\baselineskip] % Thin horizontal line
 
-		\textdagger\ You will always live in my memories
-	\end{dedica}
-	\tomo
-\fi
+{\LARGE THE BIG BOOK\\ OF \\[0.3\baselineskip] \LaTeX ~TEMPLATES}\\[0.2\baselineskip] % Title
 
-\sommario
-\input{src/summary.tex}
+\rule{\textwidth}{0.4pt}\vspace*{-\baselineskip}\vspace{3.2pt} % Thin horizontal line
+\rule{\textwidth}{1.6pt}\\[\baselineskip] % Thick horizontal line
 
-\indici
+\scshape % Small caps
+A number of fascinating and life-changing templates \\ % Tagline(s) or further description
+presented  in a clear and useable way \\[\baselineskip] % Tagline(s) or further description
+New Zealand,  2011--2012\par % Location and year
+
+\vspace*{2\baselineskip} % Whitespace between location/year and editors
+
+Edited by \\[\baselineskip]
+{\Large JOHN SMITH \\ JANE SMITH \\ JAMES SMITH\par} % Editor list
+{\itshape The University of California \\ Berkeley\par} % Editor affiliation
+
+\vfill % Whitespace between editor names and publisher logo
+
+\plogo \\[0.3\baselineskip] % Publisher logo
+{\scshape 2012} \\[0.3\baselineskip] % Year published
+{\large THE PUBLISHER}\par % Publisher
+
+\endgroup}
+
+\begin{document} 
+
+\pagestyle{empty} % Removes page numbers
+
+\titleGP % This command includes the title page
 
 \mainmatter
 
